@@ -32,6 +32,8 @@ This is **obfuscation, not encryption**. XOR with a static key does not provide 
 
 If you need actual encryption, rely on HTTPS which already encrypts the transport layer. This feature is an additional layer of obfuscation on top of TLS, not a replacement for it.
 
+![pwndrop_clipboard](pwndrop_clipboard.gif)
+
 ---
 
 <p align="center">
