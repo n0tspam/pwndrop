@@ -6,6 +6,8 @@ This fork adds a **Clipboard History** feature for red team assessments.
 
 A clipboard area in the admin panel where you can paste and store text content during engagements. Useful for saving commands, credentials, notes, or any text you need quick access to.
 
+![pwndrop_clipboard](pwndrop_clipboard.gif)
+
 **Features:**
 - Paste and save text content with timestamps
 - Copy entries back to clipboard with one click
@@ -32,7 +34,6 @@ This is **obfuscation, not encryption**. XOR with a static key does not provide 
 
 If you need actual encryption, rely on HTTPS which already encrypts the transport layer. This feature is an additional layer of obfuscation on top of TLS, not a replacement for it.
 
-![pwndrop_clipboard](pwndrop_clipboard.gif)
 
 ---
 
