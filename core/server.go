@@ -253,6 +253,12 @@ func (s *Server) setupRouter() {
 	sr.HandleFunc("/files/{id}/disable", api.FileDisableHandler).Methods("GET")
 	sr.HandleFunc("/files/{id}/pause", api.FilePauseHandler).Methods("GET")
 	sr.HandleFunc("/files/{id}/unpause", api.FileUnpauseHandler).Methods("GET")
+	sr.HandleFunc("/clipboard", api.ClipboardOptionsHandler).Methods("OPTIONS")
+	sr.HandleFunc("/clipboard", api.ClipboardListHandler).Methods("GET")
+	sr.HandleFunc("/clipboard", api.ClipboardCreateHandler).Methods("POST")
+	sr.HandleFunc("/clipboard/{id}", api.ClipboardOptionsHandler).Methods("OPTIONS")
+	sr.HandleFunc("/clipboard/{id}", api.ClipboardDeleteHandler).Methods("DELETE")
+	sr.HandleFunc("/config.js", api.ClipboardConfigHandler).Methods("GET")
 	s.r.PathPrefix(fmt.Sprintf("%s", admin_path)).Handler(http.StripPrefix(fmt.Sprintf("%s", admin_path), http.FileServer(http.Dir(Cfg.GetAdminDir()))))
 }
 

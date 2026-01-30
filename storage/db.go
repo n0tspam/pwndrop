@@ -45,6 +45,10 @@ func Open(path string) error {
 	if err != nil {
 		return err
 	}
+	err = db.Init(&DbClipboard{})
+	if err != nil {
+		return err
+	}
 
 	// initialize config
 	err = initConfig()

@@ -610,3 +610,65 @@ a:hover {
 .image-logo {
 	margin: 15px auto;
 }
+
+/* clipboard */
+
+.clipboard-section {
+    margin-top: 20px;
+}
+
+.clipboard-section h6 {
+    color: var(--pwn-slite);
+    margin-bottom: 10px;
+}
+
+.clipboard-textarea {
+    background-color: var(--pwn-black);
+    border: 1px solid var(--pwn-med);
+    border-radius: 10px;
+    color: #aaa;
+    resize: vertical;
+}
+
+.clipboard-textarea:focus {
+    color: #ddd;
+    background-color: var(--pwn-dark);
+    border-color: var(--pwn-lite);
+}
+
+.clipboard-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.clipboard-item {
+    background: var(--pwn-med);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+.clipboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.clipboard-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.clipboard-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 0;
+    font-size: 12px;
+    background-color: var(--pwn-dark);
+    padding: 8px;
+    border-radius: 5px;
+    color: #ccc;
+}

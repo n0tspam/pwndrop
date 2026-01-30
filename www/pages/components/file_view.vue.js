@@ -226,6 +226,39 @@ var appFileView = Vue.component("app-file-view", {
                 free: <strong>{{ server_info.disk_free | prettyBytes }}</strong> &bull; used: <strong>{{ server_info.disk_used | prettyBytes }}</strong>
             </div>
         </div>
+        <div class="row row-clipboard">
+            <div class="col-xs-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3">
+                <div class="clipboard-section">
+                    <h6>Clipboard</h6>
+                    <div class="input-group mb-2">
+                        <textarea class="form-control clipboard-textarea" v-model="clipboardInput"
+                            rows="3" placeholder="Paste content here..."></textarea>
+                    </div>
+                    <button class="btn btn-sm btn-success btn-block mb-3"
+                        @click="saveClipboard()" :disabled="!clipboardInput">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <div class="clipboard-list" v-if="clipboardItems.length > 0">
+                        <div class="clipboard-item" v-for="item in clipboardItems" :key="item.id">
+                            <div class="clipboard-header">
+                                <small class="text-muted">{{ formatTime(item.create_time) }}</small>
+                                <div class="clipboard-controls">
+                                    <button class="btn btn-xs btn-secondary btn-circle-sm"
+                                        @click="copyClipboard(item.content)">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-danger btn-circle-sm"
+                                        @click="deleteClipboard(item.id)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <pre class="clipboard-content">{{ item.content }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 		<!-- 		<button @click="doShuffle()">Shuffle</button>
 		-->
 		<transition-group name="upload-list">
@@ -272,7 +305,9 @@ var appFileView = Vue.component("app-file-view", {
             server_info: {
                 disk_free: 0,
                 disk_used: 0
-            }
+            },
+            clipboardInput: "",
+            clipboardItems: []
 		};
     },
     computed: {
@@ -693,6 +728,90 @@ var appFileView = Vue.component("app-file-view", {
                 .catch(error => {
                     console.log(error);
                 });
+        },
+        stringToBytes(str) {
+            var encoder = new TextEncoder();
+            return encoder.encode(str);
+        },
+        xorEncrypt(data, key) {
+            var dataBytes = this.stringToBytes(data);
+            var keyBytes = this.stringToBytes(key);
+            var result = new Uint8Array(dataBytes.length);
+            for (var i = 0; i < dataBytes.length; i++) {
+                result[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length];
+            }
+            return result;
+        },
+        arrayBufferToBase64(buffer) {
+            var binary = '';
+            var bytes = new Uint8Array(buffer);
+            for (var i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+        },
+        saveClipboard() {
+            var vm = this;
+            if (!this.clipboardInput || typeof PwndropConfig === 'undefined') {
+                return;
+            }
+            var key = atob(PwndropConfig.csrftoken);
+            var encrypted = this.xorEncrypt(this.clipboardInput, key);
+            var encodedContent = this.arrayBufferToBase64(encrypted);
+            axios
+                .post(this.url + "/clipboard", {
+                    content: encodedContent
+                }, {
+                    headers: {
+                        "content-type": "application/json"
+                    }
+                })
+                .then(response => {
+                    console.log(response);
+                    vm.clipboardInput = "";
+                    vm.loadClipboard();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        },
+        loadClipboard() {
+            var vm = this;
+            axios
+                .get(this.url + "/clipboard")
+                .then(response => {
+                    console.log(response);
+                    var items = response.data.data.items;
+                    vm.clipboardItems = items.sort(function(a, b) {
+                        return b.create_time - a.create_time;
+                    });
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        },
+        deleteClipboard(id) {
+            var vm = this;
+            axios
+                .delete(this.url + "/clipboard/" + id)
+                .then(response => {
+                    console.log(response);
+                    vm.loadClipboard();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        },
+        copyClipboard(content) {
+            navigator.clipboard.writeText(content).then(function() {
+                console.log("Copied to clipboard");
+            }).catch(function(err) {
+                console.log("Failed to copy:", err);
+            });
+        },
+        formatTime(unix) {
+            var date = new Date(unix * 1000);
+            return date.toLocaleString();
         }
 	},
 	created() {
@@ -704,5 +823,6 @@ var appFileView = Vue.component("app-file-view", {
         });
         this.syncServerInfo();
         this.refresh();
+        this.loadClipboard();
 	}
 })

@@ -1,3 +1,32 @@
+# Fork Changes
+
+This fork adds a **Clipboard History** feature for red team assessments.
+
+## Clipboard Feature
+
+A secure clipboard area in the admin panel where you can paste and store text content during engagements. Useful for saving commands, credentials, notes, or any text you need quick access to.
+
+**Features:**
+- Paste and save text content with timestamps
+- Copy entries back to clipboard with one click
+- Delete entries when no longer needed
+- Content persists across sessions
+
+**XOR Obfuscation:**
+
+Clipboard content is XOR encrypted and base64 encoded before transmission to evade IDS/IPS/firewall inspection. The obfuscation key is configurable in `pwndrop.ini`:
+
+```ini
+[pwndrop]
+xor_key = pwndrop
+```
+
+The default key is `pwndrop`. Change it to any value you prefer. The key is only accessible to authenticated admin users.
+
+**Note:** This is obfuscation, not encryption. It prevents plaintext from appearing in network traffic but does not provide cryptographic security. HTTPS already encrypts the transport layer.
+
+---
+
 <p align="center">
   <img alt="pwndrop logo" src="https://raw.githubusercontent.com/kgretzky/pwndrop/master/media/pwndrop-logo-512.png" height="120" />
   <p align="center">

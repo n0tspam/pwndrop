@@ -19,6 +19,7 @@ const (
 	INI_VAR_HTTPS_PORT = "https_port"
 	INI_VAR_DATA_DIR   = "data_dir"
 	INI_VAR_ADMIN_DIR  = "admin_dir"
+	INI_VAR_XOR_KEY    = "xor_key"
 
 	INI_SETUP              = "setup"
 	INI_SETUP_USERNAME     = "username"
@@ -49,6 +50,7 @@ func NewConfig(path string) (*Config, error) {
 		INI_VAR_HTTPS_PORT: "443",
 		INI_VAR_DATA_DIR:   data_dir,
 		INI_VAR_ADMIN_DIR:  admin_dir,
+		INI_VAR_XOR_KEY:    "pwndrop",
 	}
 
 	c.ini, err = ini.Load(path)
@@ -176,6 +178,14 @@ func (c *Config) GetDataDir() string {
 func (c *Config) GetAdminDir() string {
 	dir, _ := c.Get(INI_VAR_ADMIN_DIR)
 	return c.joinPath(c.exec_dir, dir)
+}
+
+func (c *Config) GetXorKey() string {
+	key, err := c.Get(INI_VAR_XOR_KEY)
+	if err != nil || key == "" {
+		return "pwndrop"
+	}
+	return key
 }
 
 func (c *Config) GetCookieName() string {
