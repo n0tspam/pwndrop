@@ -80,6 +80,20 @@ var appHome = Vue.component("app-home", {
                     <div v-show="errors.has('cookie-token')" class="form-error">{{ errors.first('cookie-token') }}</div>
                 </div>
             </div>
+            <div class="form-group row">
+                <label for="xor-key" class="col-sm-3 col-form-label label-help">Clipboard Key:
+                    <i class="fas fa-question-circle label-qmark" v-tooltip:bottom="'Key used to obfuscate clipboard content in transit'"></i>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="xor-key" spellcheck="false"
+                        v-model="config.xor_key"
+                        name="xor-key"
+                        v-validate="'required'"
+                        v-bind:class="{'form-control': true, 'error': errors.has('xor-key') }"
+                    >
+                    <div v-show="errors.has('xor-key')" class="form-error">{{ errors.first('xor-key') }}</div>
+                </div>
+            </div>
         </form>
     </b-modal>
 
@@ -113,7 +127,8 @@ var appHome = Vue.component("app-home", {
 				secret_path: "",
 				redirect_url: "",
 				cookie_name: "",
-				cookie_token: ""
+				cookie_token: "",
+				xor_key: ""
             },
             configShow: false,
             version: "-"
@@ -121,7 +136,7 @@ var appHome = Vue.component("app-home", {
     },
     computed: {
         isConfigComplete () {
-            return this.config.secret_path && this.config.cookie_name && this.config.cookie_token;
+            return this.config.secret_path && this.config.cookie_name && this.config.cookie_token && this.config.xor_key;
         }
     },
 	methods: {
@@ -184,6 +199,7 @@ var appHome = Vue.component("app-home", {
 					this.config.redirect_url = r.redirect_url;
 					this.config.cookie_name = r.cookie_name;
 					this.config.cookie_token = r.cookie_token;
+					this.config.xor_key = r.xor_key;
 
 					this.$bvModal.show("config-modal");
 				})
@@ -202,7 +218,8 @@ var appHome = Vue.component("app-home", {
 						secret_path: this.config.secret_path,
 						redirect_url: this.config.redirect_url,
 						cookie_name: this.config.cookie_name,
-						cookie_token: this.config.cookie_token
+						cookie_token: this.config.cookie_token,
+						xor_key: this.config.xor_key
 					},
 					{
 						headers: {

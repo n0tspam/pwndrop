@@ -68,13 +68,21 @@ func initConfig() error {
 			RedirectUrl: "https://www.youtube.com/watch?v=oHg5SJYRHA0",
 			CookieName:  utils.GenRandomString(4),
 			CookieToken: utils.GenRandomHash(),
+			XorKey:      "pwndrop",
 		}
 		_, err = ConfigCreate(o)
 		if err != nil {
 			return err
 		}
 	}
-	log.Debug("secret_path: %s", o.SecretPath)
 	// update added values here in future updates
+	if o.XorKey == "" {
+		o.XorKey = "pwndrop"
+		_, err = ConfigUpdate(1, o)
+		if err != nil {
+			return err
+		}
+	}
+	log.Debug("secret_path: %s", o.SecretPath)
 	return nil
 }

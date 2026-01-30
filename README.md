@@ -4,26 +4,33 @@ This fork adds a **Clipboard History** feature for red team assessments.
 
 ## Clipboard Feature
 
-A secure clipboard area in the admin panel where you can paste and store text content during engagements. Useful for saving commands, credentials, notes, or any text you need quick access to.
+A clipboard area in the admin panel where you can paste and store text content during engagements. Useful for saving commands, credentials, notes, or any text you need quick access to.
 
 **Features:**
 - Paste and save text content with timestamps
 - Copy entries back to clipboard with one click
 - Delete entries when no longer needed
 - Content persists across sessions
+- All traffic is obfuscated in transit
 
-**XOR Obfuscation:**
+## Traffic Obfuscation
 
-Clipboard content is XOR encrypted and base64 encoded before transmission to evade IDS/IPS/firewall inspection. The obfuscation key is configurable in `pwndrop.ini`:
+Clipboard content is XOR obfuscated and base64 encoded in both directions (upload and download) to prevent plaintext from appearing in network traffic. This is designed to evade inspection by:
 
-```ini
-[pwndrop]
-xor_key = pwndrop
-```
+- Firewalls
+- Intrusion Detection Systems (IDS)
+- Intrusion Prevention Systems (IPS)
+- Network monitoring tools
 
-The default key is `pwndrop`. Change it to any value you prefer. The key is only accessible to authenticated admin users.
+**Configuration:**
 
-**Note:** This is obfuscation, not encryption. It prevents plaintext from appearing in network traffic but does not provide cryptographic security. HTTPS already encrypts the transport layer.
+The obfuscation key is configurable in the Settings panel (click the cog icon) under "Clipboard Key". The default key is `pwndrop`. You can change it at any time without restarting the server.
+
+**Important Disclaimer:**
+
+This is **obfuscation, not encryption**. XOR with a static key does not provide cryptographic security. It is solely intended to prevent sensitive clipboard content from appearing as plaintext in network traffic, making it harder for automated inspection tools to flag or log the data.
+
+If you need actual encryption, rely on HTTPS which already encrypts the transport layer. This feature is an additional layer of obfuscation on top of TLS, not a replacement for it.
 
 ---
 

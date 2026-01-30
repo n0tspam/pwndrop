@@ -7,6 +7,7 @@ type DbConfig struct {
 	RedirectUrl string `json:"redirect_url"`
 	CookieName  string `json:"cookie_name"`
 	CookieToken string `json:"cookie_token"`
+	XorKey      string `json:"xor_key"`
 }
 
 func ConfigCreate(o *DbConfig) (*DbConfig, error) {

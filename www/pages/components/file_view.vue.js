@@ -750,6 +750,23 @@ var appFileView = Vue.component("app-file-view", {
             }
             return btoa(binary);
         },
+        base64ToArrayBuffer(base64) {
+            var binary = atob(base64);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes;
+        },
+        xorDecrypt(data, key) {
+            var keyBytes = this.stringToBytes(key);
+            var result = new Uint8Array(data.length);
+            for (var i = 0; i < data.length; i++) {
+                result[i] = data[i] ^ keyBytes[i % keyBytes.length];
+            }
+            var decoder = new TextDecoder();
+            return decoder.decode(result);
+        },
         saveClipboard() {
             var vm = this;
             if (!this.clipboardInput || typeof PwndropConfig === 'undefined') {
@@ -782,6 +799,12 @@ var appFileView = Vue.component("app-file-view", {
                 .then(response => {
                     console.log(response);
                     var items = response.data.data.items;
+                    var key = atob(PwndropConfig.csrftoken);
+                    // Decrypt each item's content
+                    for (var i = 0; i < items.length; i++) {
+                        var encrypted = vm.base64ToArrayBuffer(items[i].content);
+                        items[i].content = vm.xorDecrypt(encrypted, key);
+                    }
                     vm.clipboardItems = items.sort(function(a, b) {
                         return b.create_time - a.create_time;
                     });

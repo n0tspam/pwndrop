@@ -49,7 +49,7 @@ func ConfigUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if o.SecretPath == "" || o.CookieName == "" || o.CookieToken == "" {
+	if o.SecretPath == "" || o.CookieName == "" || o.CookieToken == "" || o.XorKey == "" {
 		DumpResponse(w, "missing config variables", http.StatusBadRequest, API_ERROR_BAD_REQUEST, nil)
 		return
 	}

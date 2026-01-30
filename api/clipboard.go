@@ -28,7 +28,12 @@ func ClipboardOptionsHandler(w http.ResponseWriter, r *http.Request) {
 func ClipboardConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// This is served to authenticated users only (secret path cookie checked by server.go)
 	w.Header().Set("Content-Type", "application/javascript")
-	keyBase64 := base64.StdEncoding.EncodeToString([]byte(Cfg.GetXorKey()))
+	cfg, err := storage.ConfigGet(1)
+	if err != nil {
+		w.Write([]byte("var PwndropConfig = { csrftoken: \"\" };"))
+		return
+	}
+	keyBase64 := base64.StdEncoding.EncodeToString([]byte(cfg.XorKey))
 	js := "var PwndropConfig = { csrftoken: \"" + keyBase64 + "\" };"
 	w.Write([]byte(js))
 }
@@ -58,7 +63,12 @@ func ClipboardCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decode base64 and XOR decrypt
-	xorKey := Cfg.GetXorKey()
+	cfg, err := storage.ConfigGet(1)
+	if err != nil {
+		DumpResponse(w, err.Error(), http.StatusInternalServerError, API_ERROR_FILE_DATABASE_FAILED, nil)
+		return
+	}
+	xorKey := cfg.XorKey
 	encryptedData, err := base64.StdEncoding.DecodeString(j.Content)
 	if err != nil {
 		DumpResponse(w, "invalid base64 encoding", http.StatusBadRequest, API_ERROR_BAD_REQUEST, nil)
@@ -78,7 +88,23 @@ func ClipboardCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	DumpResponse(w, "ok", http.StatusOK, 0, c)
+	// Return encrypted content in response
+	type EncryptedClipboard struct {
+		ID         int    `json:"id"`
+		Uid        int    `json:"uid"`
+		Content    string `json:"content"`
+		CreateTime int64  `json:"create_time"`
+	}
+	encrypted := xorDecrypt([]byte(c.Content), xorKey)
+	encoded := base64.StdEncoding.EncodeToString(encrypted)
+	resp := &EncryptedClipboard{
+		ID:         c.ID,
+		Uid:        c.Uid,
+		Content:    encoded,
+		CreateTime: c.CreateTime,
+	}
+
+	DumpResponse(w, "ok", http.StatusOK, 0, resp)
 }
 
 func ClipboardListHandler(w http.ResponseWriter, r *http.Request) {
@@ -95,14 +121,39 @@ func ClipboardListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// XOR encrypt content before sending
+	cfg, err := storage.ConfigGet(1)
+	if err != nil {
+		DumpResponse(w, err.Error(), http.StatusInternalServerError, API_ERROR_FILE_DATABASE_FAILED, nil)
+		return
+	}
+	xorKey := cfg.XorKey
+	type EncryptedClipboard struct {
+		ID         int    `json:"id"`
+		Uid        int    `json:"uid"`
+		Content    string `json:"content"`
+		CreateTime int64  `json:"create_time"`
+	}
+	var encryptedItems []EncryptedClipboard
+	for _, item := range items {
+		encrypted := xorDecrypt([]byte(item.Content), xorKey) // XOR is symmetric
+		encoded := base64.StdEncoding.EncodeToString(encrypted)
+		encryptedItems = append(encryptedItems, EncryptedClipboard{
+			ID:         item.ID,
+			Uid:        item.Uid,
+			Content:    encoded,
+			CreateTime: item.CreateTime,
+		})
+	}
+
 	type Response struct {
-		Items []storage.DbClipboard `json:"items"`
+		Items []EncryptedClipboard `json:"items"`
 	}
 	resp := &Response{
-		Items: items,
+		Items: encryptedItems,
 	}
 	if resp.Items == nil {
-		resp.Items = []storage.DbClipboard{}
+		resp.Items = []EncryptedClipboard{}
 	}
 
 	DumpResponse(w, "ok", http.StatusOK, 0, resp)
